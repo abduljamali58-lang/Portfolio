@@ -1,27 +1,8 @@
-// Scroll to Top Button Handler
-const scrollToTopBtn = document.getElementById('scrollToTop');
-
-window.addEventListener('scroll', () => {
-  if (window.pageYOffset > 300) {
-    scrollToTopBtn.classList.add('show');
-  } else {
-    scrollToTopBtn.classList.remove('show');
-  }
-});
-
-scrollToTopBtn.addEventListener('click', () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
-});
-
 // Theme Toggle Handler
 const themeToggle = document.getElementById('themeToggle');
-const htmlElement = document.documentElement;
+const savedTheme = localStorage.getItem('theme') || 'dark';
 
 // Load saved theme preference
-const savedTheme = localStorage.getItem('theme') || 'dark';
 if (savedTheme === 'light') {
   document.body.classList.add('light-mode');
 }
@@ -34,34 +15,58 @@ if (themeToggle) {
   });
 }
 
-// Contact Form Handler
-const contactForm = document.getElementById('contactForm');
-
-if (contactForm) {
-  contactForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    // Get form values
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const message = document.getElementById('message').value;
-
-    // Validate form
-    if (!name || !email || !message) {
-      alert('Please fill in all fields');
-      return;
+// Smooth scrolling for navigation links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    const href = this.getAttribute('href');
+    if (href !== '#' && document.querySelector(href)) {
+      e.preventDefault();
+      document.querySelector(href).scrollIntoView({
+        behavior: 'smooth'
+      });
     }
-
-    // Create mailto link
-    const mailtoLink = `mailto:abdul.jamali58@gmail.com?subject=Contact from ${encodeURIComponent(name)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`)}`;
-
-    // Open email client
-    window.location.href = mailtoLink;
-
-    // Show success message
-    alert('Opening your email client. Please send the email to complete your message.');
-    
-    // Reset form
-    contactForm.reset();
   });
-}
+});
+
+// Add active state to nav links based on scroll position
+window.addEventListener('scroll', () => {
+  const sections = document.querySelectorAll('section');
+  let current = '';
+
+  sections.forEach(section => {
+    const sectionTop = section.offsetTop;
+    const sectionHeight = section.clientHeight;
+    if (pageYOffset >= sectionTop - 200) {
+      current = section.getAttribute('id');
+    }
+  });
+
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href').slice(1) === current) {
+      link.classList.add('active');
+    }
+  });
+});
+
+// Add fade-in animation on scroll
+const observerOptions = {
+  threshold: 0.1,
+  rootMargin: '0px 0px -100px 0px'
+};
+
+const observer = new IntersectionObserver(function(entries) {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, observerOptions);
+
+document.querySelectorAll('.section, .experience-item, .project-card').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  observer.observe(el);
+});
